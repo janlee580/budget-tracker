@@ -51,45 +51,80 @@ A comprehensive, user-friendly budget tracking application built with Flutter. I
 6.  Explore the **Settings** tab to switch to Dark Mode or reset your data.
 
 ### Home Screen
-![HomeScreen.png](assets/images/HomeScreen.png)
+
+<img src="assets/images/HomeScreen.png" alt="Home Screen" width="250">
 
 ### Manage Budget Screen
-![ManageBudgetScreen.png](assets/images/ManageBudgetScreen.png)
-![BudgetUpdateDialog.png](assets/images/BudgetUpdateDialog.png)
+
+<table>
+  <tr>
+    <td><img src="assets/images/ManageBudgetScreen.png" alt="Manage Budget Screen" width="250"></td>
+    <td><img src="assets/images/BudgetUpdateDialog.png" alt="Budget Update Dialog" width="250"></td>
+  </tr>
+</table>
 
 ### Add Transaction Screen
-![AddTransactionScreen.png](assets/images/AddTransactionDialog.png)
-![AddExpenseScreen.png](assets/images/AddExpenseScreen.png)
-![AddIncomeScreen.png](assets/images/AddIncomeScreen.png)
-![AddSavingsScreen.png](assets/images/AddSavingsScreen.png)
-![SavingsAmountTransferDialog.png](assets/images/SavingsAmountTransferDialog.png)
+
+<table>
+  <tr>
+    <td><img src="assets/images/AddTransactionDialog.png" alt="Add Transaction Dialog" width="250"></td>
+    <td><img src="assets/images/AddExpenseScreen.png" alt="Add Expense Screen" width="250"></td>
+    <td><img src="assets/images/AddIncomeScreen.png" alt="Add Income Screen" width="250"></td>
+  </tr>
+  <tr>
+    <td><img src="assets/images/AddSavingsScreen.png" alt="Add Savings Screen" width="250"></td>
+    <td><img src="assets/images/SavingsAmountTransferDialog.png" alt="Savings Amount Transfer Dialog" width="250"></td>
+  </tr>
+</table>
 
 ### Summary Screen
-![SummaryScreen.png](assets/images/SummaryScreen1.png)
-![SummaryScreen2.png](assets/images/SummaryScreen2.png)
+
+<table>
+  <tr>
+    <td><img src="assets/images/SummaryScreen1.png" alt="Summary Screen 1" width="250"></td>
+    <td><img src="assets/images/SummaryScreen2.png" alt="Summary Screen 2" width="250"></td>
+  </tr>
+</table>
 
 ### History Screen
-![HistoryScreen.png](assets/images/TransactionHistoryScreen.png)
-![TransactionHistoryScreen1.png](assets/images/TransactionHistoryScreen1.png)
-![TransactionHistoryScreen2.png](assets/images/TransactionHistoryScreen2.png)
-![EditTransactionScreen.png](assets/images/EditTransactionScreen.png)
-![DeleteTransactionDialog.png](assets/images/DeleteTransactionDialog.png)
+
+<table>
+  <tr>
+    <td><img src="assets/images/TransactionHistoryScreen.png" alt="Transaction History Screen" width="250"></td>
+    <td><img src="assets/images/TransactionHistoryScreen1.png" alt="Transaction History Screen 1" width="250"></td>
+    <td><img src="assets/images/TransactionHistoryScreen2.png" alt="Transaction History Screen 2" width="250"></td>
+  </tr>
+  <tr>
+    <td><img src="assets/images/EditTransactionScreen.png" alt="Edit Transaction Screen" width="250"></td>
+    <td><img src="assets/images/DeleteTransactionDialog.png" alt="Delete Transaction Dialog" width="250"></td>
+  </tr>
+</table>
 
 ### Notification Screen
-![NotificationScreen.png](assets/images/NotificationScreen.png)
+
+<img src="assets/images/NotificationScreen.png" alt="Notification Screen" width="250">
 
 ### Settings Screen
-![SettingsScreen.png](assets/images/SettingsScreen.png)
+
+<img src="assets/images/SettingsScreen.png" alt="Settings Screen" width="250">
 
 ### DarkMode
-![DarkMode.png](assets/images/DarkMode.png)
-![DarkMode1.png](assets/images/DarkMode1.png)
-![DarkMode2.png](assets/images/DarkMode2.png)
-![DarkMode3.png](assets/images/DarkMode3.png)
-![DarkMode4.png](assets/images/DarkMode4.png)
-![DarkMode5.png](assets/images/DarkMode5.png)
-![DarkMode6.png](assets/images/DarkMode6.png)
 
+<table>
+  <tr>
+    <td><img src="assets/images/DarkMode.png" alt="Dark Mode" width="250"></td>
+    <td><img src="assets/images/DarkMode1.png" alt="Dark Mode 1" width="250"></td>
+    <td><img src="assets/images/DarkMode2.png" alt="Dark Mode 2" width="250"></td>
+  </tr>
+  <tr>
+    <td><img src="assets/images/DarkMode3.png" alt="Dark Mode 3" width="250"></td>
+    <td><img src="assets/images/DarkMode4.png" alt="Dark Mode 4" width="250"></td>
+    <td><img src="assets/images/DarkMode5.png" alt="Dark Mode 5" width="250"></td>
+  </tr>
+  <tr>
+    <td><img src="assets/images/DarkMode6.png" alt="Dark Mode 6" width="250"></td>
+  </tr>
+</table>
 
 ## Developer
 
