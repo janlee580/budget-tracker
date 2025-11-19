@@ -34,6 +34,13 @@ A comprehensive, user-friendly budget tracking application built with Flutter. I
 *   **Offline First:**
     *   All data is stored locally on the device, ensuring the app is fully functional without an internet connection.
 
+## Database
+
+*   **Technology:** The app utilizes a local SQLite database, managed through the powerful `sqflite` package in Flutter.
+*   **Offline-First Architecture:** All user data, including transactions, budgets, and settings, is stored directly on the device. This core design choice ensures the app is always available and responsive, regardless of internet connectivity.
+*   **Data Privacy & Control:** By keeping all data on the user's device, the app ensures complete privacy. No financial information is ever sent to an external server. The user has full control over their data, with the ability to clear it at any time through the settings menu.
+*   **Data Persistence:** The database provides robust and permanent storage for all financial records, ensuring that the user's history is maintained across app sessions.
+
 ## How to Use
 
 1.  Launch the app to see your recent transactions on the home screen.
