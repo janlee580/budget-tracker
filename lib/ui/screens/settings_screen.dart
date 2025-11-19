@@ -71,7 +71,7 @@ class SettingsScreen extends StatelessWidget {
                   onChanged: (value) {
                     themeProvider.toggleTheme(value);
                   },
-                  activeColor: primaryGradientBottom,
+                  activeThumbColor: primaryGradientBottom,
                   activeTrackColor: primaryGradientTop,
                 ),
               ),
