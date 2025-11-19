@@ -1,7 +1,9 @@
+import 'package:bt/ui/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:bt/data/database_helper.dart';
 import 'package:bt/providers/theme_provider.dart';
+import 'package:bt/ui/themes/app_colors.dart';
 
 class SettingsScreen extends StatelessWidget {
   final Future<void> Function() onReset;
@@ -21,8 +23,7 @@ class SettingsScreen extends StatelessWidget {
               child: const Text('Cancel'),
               onPressed: () => Navigator.of(ctx).pop(),
             ),
-            TextButton(
-              child: const Text('Reset', style: TextStyle(color: Colors.red)),
+            GradientButton(
               onPressed: () async {
                 await DatabaseHelper.instance.deleteAllData();
                 await onReset();
@@ -35,6 +36,9 @@ class SettingsScreen extends StatelessWidget {
                   );
                 }
               },
+              text: 'Reset',
+              width: 100,
+              height: 40,
             ),
           ],
         );
@@ -48,27 +52,49 @@ class SettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: const Text('Settings', style: TextStyle(color: Colors.white)),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: primaryGradient,
+          ),
+        ),
       ),
-      body: ListView(
-        children: <Widget>[
-          ListTile(
-            title: const Text('Dark Mode'),
-            trailing: Switch(
-              value: themeProvider.themeMode == ThemeMode.dark,
-              onChanged: (value) {
-                themeProvider.toggleTheme(value);
-              },
-            ),
-          ),
-          const Divider(),
-          ListTile(
-            title: const Text('Reset Application'),
-            subtitle: const Text('Deletes all data.'),
-            trailing: const Icon(Icons.warning, color: Colors.red),
-            onTap: () => _showResetDialog(context),
-          ),
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth > 600;
+          final content = ListView(
+            children: <Widget>[
+              ListTile(
+                title: const Text('Dark Mode'),
+                trailing: Switch(
+                  value: themeProvider.themeMode == ThemeMode.dark,
+                  onChanged: (value) {
+                    themeProvider.toggleTheme(value);
+                  },
+                  activeColor: primaryGradientBottom,
+                  activeTrackColor: primaryGradientTop,
+                ),
+              ),
+              const Divider(),
+              ListTile(
+                title: const Text('Reset Application'),
+                subtitle: const Text('Deletes all data.'),
+                trailing: const Icon(Icons.warning, color: Colors.red),
+                onTap: () => _showResetDialog(context),
+              ),
+            ],
+          );
+
+          if (isWide) {
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: content,
+              ),
+            );
+          }
+          return content;
+        },
       ),
     );
   }

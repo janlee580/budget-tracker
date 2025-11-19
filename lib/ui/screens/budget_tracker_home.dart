@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:bt/ui/themes/app_colors.dart';
 import 'package:bt/providers/notification_provider.dart';
 import 'package:bt/ui/screens/notification_screen.dart';
+import 'package:bt/ui/widgets/gradient_button.dart';
 
 class BudgetTrackerHome extends StatelessWidget {
   final Function(TransactionType) onAddTransaction;
@@ -65,14 +66,19 @@ class BudgetTrackerHome extends StatelessWidget {
       builder: (context, budgetProvider, child) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Dashboard'),
+            title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                gradient: primaryGradient,
+              ),
+            ),
             actions: [
               Consumer<NotificationProvider>(
                 builder: (context, provider, child) {
                   return Stack(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.notifications),
+                        icon: const Icon(Icons.notifications, color: Colors.white),
                         onPressed: () {
                           Navigator.of(context).push(MaterialPageRoute(builder: (context) => const NotificationScreen()));
                         },
@@ -106,7 +112,7 @@ class BudgetTrackerHome extends StatelessWidget {
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.settings),
+                icon: const Icon(Icons.settings, color: Colors.white),
                 onPressed: () {
                   Navigator.of(context).push(MaterialPageRoute(builder: (context) => SettingsScreen(onReset: onRefresh)));
                 },
@@ -137,8 +143,6 @@ class BudgetTrackerHome extends StatelessWidget {
         _buildQuickActionButtons(context),
         const SizedBox(height: 24),
         _buildBalanceOverviewCard(context, budgetProvider),
-        const SizedBox(height: 24),
-        _buildSavingsCard(context, budgetProvider),
         const SizedBox(height: 32),
         _buildMonthlyBudgetsCard(context, budgetProvider),
       ],
@@ -163,33 +167,22 @@ class BudgetTrackerHome extends StatelessWidget {
               ),
               const SizedBox(width: 24),
               Expanded(
-                flex: 1,
-                child: _buildSavingsCard(context, budgetProvider),
+                flex: 3,
+                child: _buildMonthlyBudgetsCard(context, budgetProvider),
               ),
             ],
           ),
-          const SizedBox(height: 32),
-          _buildMonthlyBudgetsCard(context, budgetProvider),
         ],
       ),
     );
   }
 
   Widget _buildQuickActionButtons(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
+    return GradientButton(
+      onPressed: () => _showAddTransactionDialog(context),
+      text: 'Add Transaction',
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
-      child: ElevatedButton.icon(
-        icon: const Icon(Icons.add, color: white),
-        label: const Text('Add Transaction', style: TextStyle(color: white)),
-        onPressed: () => _showAddTransactionDialog(context),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: theme.colorScheme.primary,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      ),
+      height: 50,
     );
   }
 
@@ -203,64 +196,85 @@ class BudgetTrackerHome extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Available Total Budget', style: TextStyle(color: Colors.grey, fontSize: 14)),
-            const SizedBox(height: 8),
-            Text('\$${budgetProvider.totalBalance.toStringAsFixed(2)}',
-                style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface)),
-            const SizedBox(height: 20),
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Available Total Budget', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                        const SizedBox(height: 8),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('\$${budgetProvider.totalBalance.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.onSurface)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const VerticalDivider(thickness: 1, color: Colors.grey),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Total Saved', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                        const SizedBox(height: 8),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('\$${budgetProvider.totalSavings.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.onSurface)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Income',
-                    style: TextStyle(
-                        color: theme.colorScheme.primary, fontSize: 16)),
-                Text('\$${budgetProvider.totalIncomeThisMonth.toStringAsFixed(2)}',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface)),
+                const Expanded(
+                  child: Text('Total Income',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          color: primaryGradientTop, fontSize: 16)),
+                ),
+                Flexible(
+                  child: Text('\$${budgetProvider.totalIncomeThisMonth.toStringAsFixed(2)}',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface)),
+                ),
               ],
             ),
             const SizedBox(height: 8),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Expenses',
-                    style: TextStyle(
-                        color: theme.colorScheme.error, fontSize: 16)),
-                Text('-\$${budgetProvider.totalExpensesThisMonth.toStringAsFixed(2)}',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface)),
+                Expanded(
+                  child: Text('Total Expenses',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          color: theme.colorScheme.error, fontSize: 16)),
+                ),
+                Flexible(
+                  child: Text('-\$${budgetProvider.totalExpensesThisMonth.toStringAsFixed(2)}',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface)),
+                ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSavingsCard(BuildContext context, BudgetProvider budgetProvider) {
-    final theme = Theme.of(context);
-    return Card(
-      elevation: 4,
-      shadowColor: theme.colorScheme.secondary.withAlpha(26),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Total Saved', style: TextStyle(color: Colors.grey, fontSize: 14)),
-            const SizedBox(height: 8),
-            Text('\$${budgetProvider.totalSavings.toStringAsFixed(2)}',
-                style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface)),
           ],
         ),
       ),
@@ -309,10 +323,13 @@ class BudgetTrackerHome extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(category, style: const TextStyle(fontWeight: FontWeight.w500)),
           Expanded(
+            flex: 2,
+            child: Text(category, style: const TextStyle(fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
+          ),
+          Expanded(
+            flex: 3,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: LinearProgressIndicator(
@@ -322,7 +339,7 @@ class BudgetTrackerHome extends StatelessWidget {
                     ? theme.colorScheme.error
                     : (progress > 0.5
                         ? theme.colorScheme.secondary
-                        : theme.colorScheme.primary)),
+                        : primaryGradientTop)),
                 minHeight: 10,
                 borderRadius: BorderRadius.circular(5),
               ),

@@ -40,7 +40,12 @@ class SummaryScreenState extends State<SummaryScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Summary'),
+            title: const Text('Summary', style: TextStyle(color: Colors.white)),
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                gradient: primaryGradient,
+              ),
+            ),
             actions: [
               if (dropdownMonths.length > 1)
                 DropdownButton<String>(
@@ -52,7 +57,7 @@ class SummaryScreenState extends State<SummaryScreen> {
                         value == 'Overall Summary'
                             ? 'Overall Summary'
                             : DateFormat('MMM yyyy').format(DateFormat('yyyy-MM').parse(value)),
-                        style: const TextStyle(fontSize: 16),
+                        style: const TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     );
                   }).toList(),
@@ -63,6 +68,7 @@ class SummaryScreenState extends State<SummaryScreen> {
                   },
                   underline: Container(), // Remove underline
                   icon: const Icon(Icons.filter_list, color: Colors.white),
+                  dropdownColor: primaryGradientBottom,
                 ),
             ],
           ),
@@ -144,11 +150,14 @@ class SummaryScreenState extends State<SummaryScreen> {
                 children: [
                   const Text('Total Expenses', style: TextStyle(color: Colors.grey, fontSize: 14)),
                   const SizedBox(height: 8),
-                  Text('\$${totalExpenses.toStringAsFixed(2)}',
-                      style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface)),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text('\$${totalExpenses.toStringAsFixed(2)}',
+                        style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface)),
+                  ),
                 ],
               ),
             ),
@@ -157,11 +166,14 @@ class SummaryScreenState extends State<SummaryScreen> {
                 children: [
                   const Text('Total Savings', style: TextStyle(color: Colors.grey, fontSize: 14)),
                   const SizedBox(height: 8),
-                  Text('\$${totalSavings.toStringAsFixed(2)}',
-                      style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface)),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text('\$${totalSavings.toStringAsFixed(2)}',
+                        style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface)),
+                  ),
                 ],
               ),
             ),
@@ -196,7 +208,7 @@ class SummaryScreenState extends State<SummaryScreen> {
         barRods: [
           BarChartRodData(
             toY: total,
-            color: secondaryBlue,
+            color: primaryGradientTop,
             width: 16,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(4),
@@ -295,13 +307,12 @@ class SummaryScreenState extends State<SummaryScreen> {
     }
 
     final List<Color> pieChartColors = [
-      primaryGreen,
+      primaryGradientTop,
+      primaryGradientBottom,
       secondaryBlue,
+      const Color(0xFF84D9FF),
       warningRed,
-      Colors.purpleAccent,
-      Colors.orangeAccent,
-      Colors.teal,
-      Colors.pinkAccent,
+      const Color(0xFF6B8E23),
     ];
 
     return Card(
@@ -317,7 +328,7 @@ class SummaryScreenState extends State<SummaryScreen> {
             const SizedBox(height: 24),
             LayoutBuilder(
               builder: (context, constraints) {
-                return constraints.maxWidth < 200
+                return constraints.maxWidth < 250
                     ? _buildCompactPieChart(expenseByCategory, pieChartColors)
                     : _buildStandardPieChart(expenseByCategory, pieChartColors);
               },
@@ -329,72 +340,63 @@ class SummaryScreenState extends State<SummaryScreen> {
   }
 
   Widget _buildCompactPieChart(Map<String, double> data, List<Color> colors) {
-    return _buildLegend(data, colors);
+    return SingleChildScrollView(child: _buildLegend(data, colors));
   }
 
   Widget _buildStandardPieChart(Map<String, double> data, List<Color> colors) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          flex: 2,
-          child: SizedBox(
-            height: 150,
-            child: PieChart(
-              PieChartData(
-                sections: data.entries.map((entry) {
-                  final index = data.keys.toList().indexOf(entry.key);
-                  return PieChartSectionData(
-                    color: colors[index % colors.length],
-                    value: entry.value,
-                    title: '',
-                    radius: 50,
-                  );
-                }).toList(),
-                sectionsSpace: 2,
-                centerSpaceRadius: 30,
-              ),
+        SizedBox(
+          height: 180,
+          child: PieChart(
+            PieChartData(
+              sections: data.entries.map((entry) {
+                final index = data.keys.toList().indexOf(entry.key);
+                return PieChartSectionData(
+                  color: colors[index % colors.length],
+                  value: entry.value,
+                  title: '',
+                  radius: 50,
+                );
+              }).toList(),
+              sectionsSpace: 2,
+              centerSpaceRadius: 30,
             ),
           ),
         ),
-        Expanded(
-          flex: 3,
-          child: _buildLegend(data, colors),
-        ),
+        const SizedBox(height: 24),
+        _buildLegend(data, colors),
       ],
     );
   }
 
   Widget _buildLegend(Map<String, double> data, List<Color> colors) {
     final totalExpense = data.values.fold(0.0, (sum, amount) => sum + amount);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Wrap(
+      spacing: 16.0,
+      runSpacing: 8.0,
+      alignment: WrapAlignment.center,
       children: data.entries.map((entry) {
         final index = data.keys.toList().indexOf(entry.key);
         final percentage = (entry.value / totalExpense) * 100;
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
-          child: Row(
-            children: [
-              Container(
-                width: 16,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: colors[index % colors.length],
-                  shape: BoxShape.circle,
-                ),
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: colors[index % colors.length],
+                shape: BoxShape.circle,
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '${entry.key} (${percentage.toStringAsFixed(1)}%)',
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '${entry.key} (${percentage.toStringAsFixed(1)}%)',
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            ),
+          ],
         );
       }).toList(),
     );
@@ -475,13 +477,13 @@ class SummaryScreenState extends State<SummaryScreen> {
                     LineChartBarData(
                       spots: spots,
                       isCurved: true,
-                      color: primaryGreen,
+                      color: primaryGradientTop,
                       barWidth: 3,
                       isStrokeCapRound: true,
                       dotData: const FlDotData(show: false),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: primaryGreen.withAlpha(77),
+                        color: primaryGradientTop.withAlpha(77),
                       ),
                     ),
                   ],

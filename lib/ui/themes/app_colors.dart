@@ -12,3 +12,13 @@ const Color white = Color(0xFFFFFFFF);
 const Color darkPrimary = Color(0xFF121212);
 const Color darkSecondary = Color(0xFF1E1E1E);
 const Color darkText = Color(0xFFE0E0E0);
+
+// --- Gradients ---
+const Color primaryGradientTop = Color(0xFF38D39F);
+const Color primaryGradientBottom = Color(0xFF3AB83C);
+
+const LinearGradient primaryGradient = LinearGradient(
+  colors: [primaryGradientTop, primaryGradientBottom],
+  begin: Alignment.topCenter,
+  end: Alignment.bottomCenter,
+);

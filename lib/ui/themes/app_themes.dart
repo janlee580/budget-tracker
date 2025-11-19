@@ -4,7 +4,7 @@ import 'app_colors.dart';
 
 // --- Themes ---
 final ThemeData lightTheme = ThemeData(
-    scaffoldBackgroundColor: const Color(0xFFF4F6F6),
+    scaffoldBackgroundColor: const Color(0xFFF5F5F5),
     primaryColor: primaryGreen,
     fontFamily: 'Poppins',
     colorScheme: const ColorScheme.light(
@@ -36,8 +36,14 @@ final ThemeData lightTheme = ThemeData(
       unselectedItemColor: Colors.grey,
       type: BottomNavigationBarType.fixed,
     ),
-    inputDecorationTheme: const InputDecorationTheme(
-      border: OutlineInputBorder(),
+    inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: primaryGradientTop, width: 2.0),
+        borderRadius: BorderRadius.circular(8.0),
+      ),
     ));
 
 final ThemeData darkTheme = ThemeData(
@@ -50,7 +56,7 @@ final ThemeData darkTheme = ThemeData(
     error: warningRed,
     surface: darkSecondary,
     onSurface: darkText,
-    onPrimary: textBlack,
+    onPrimary: white,
     onSecondary: textBlack,
   ),
   appBarTheme: const AppBarTheme(
@@ -71,13 +77,19 @@ final ThemeData darkTheme = ThemeData(
     margin: const EdgeInsets.symmetric(vertical: 8),
   ),
   bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-    selectedItemColor: primaryGreen,
+    selectedItemColor: primaryGradientTop,
     unselectedItemColor: Colors.grey,
     backgroundColor: darkSecondary,
     type: BottomNavigationBarType.fixed,
   ),
   inputDecorationTheme: InputDecorationTheme(
-    border: const OutlineInputBorder(),
+    border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide: BorderSide(color: darkText.withAlpha(100))),
+    focusedBorder: OutlineInputBorder(
+      borderSide: const BorderSide(color: primaryGradientTop, width: 2.0),
+      borderRadius: BorderRadius.circular(8.0),
+    ),
     labelStyle: TextStyle(color: darkText.withAlpha(200)),
   ),
   // Add other dark theme properties if needed

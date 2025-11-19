@@ -8,12 +8,15 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import 'package:bt/ui/themes/app_colors.dart';
 import 'package:bt/providers/budget_provider.dart';
+import 'package:bt/ui/widgets/gradient_button.dart';
 
 class AddTransactionScreen extends StatefulWidget {
+  final Transaction? transaction;
   final TransactionType initialType;
 
   const AddTransactionScreen({
     super.key,
+    this.transaction,
     this.initialType = TransactionType.expense,
   });
 
@@ -27,22 +30,38 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
   final _amountController = TextEditingController();
   String? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
+  bool get _isEditing => widget.transaction != null;
 
   final List<String> _incomeCategories = ['Salary', 'Bonus', 'Gift', 'Other'];
-  final List<String> _savingsCategories = ['General Savings', 'Vacation', 'New Car', 'Retirement'];
+  final List<String> _savingsCategories = [
+    'General Savings',
+    'Vacation',
+    'New Car',
+    'Retirement'
+  ];
 
   @override
   void initState() {
     super.initState();
-    _transactionType = widget.initialType;
-    final budgetProvider = Provider.of<BudgetProvider>(context, listen: false);
-    final categories = _getCategoriesForType(_transactionType, budgetProvider);
-    if (categories.isNotEmpty) {
-      _selectedCategory = categories.first;
+
+    if (_isEditing) {
+      final transaction = widget.transaction!;
+      _transactionType = transaction.type;
+      _amountController.text = transaction.amount.toString();
+      _selectedCategory = transaction.category;
+      _selectedDate = transaction.date;
+    } else {
+      _transactionType = widget.initialType;
+      final budgetProvider = Provider.of<BudgetProvider>(context, listen: false);
+      final categories = _getCategoriesForType(_transactionType, budgetProvider);
+      if (categories.isNotEmpty) {
+        _selectedCategory = categories.first;
+      }
     }
   }
 
-  List<String> _getCategoriesForType(TransactionType type, BudgetProvider budgetProvider) {
+  List<String> _getCategoriesForType(
+      TransactionType type, BudgetProvider budgetProvider) {
     switch (type) {
       case TransactionType.income:
         return _incomeCategories;
@@ -54,36 +73,92 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   void _submitTransaction() async {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      final amount = double.parse(_amountController.text);
-      final budgetProvider = Provider.of<BudgetProvider>(context, listen: false);
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    _formKey.currentState!.save();
 
-      if (_transactionType == TransactionType.savings &&
-          amount > budgetProvider.totalBalance) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Savings cannot exceed available balance of \$${budgetProvider.totalBalance.toStringAsFixed(2)}'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-        return;
+    final budgetProvider = Provider.of<BudgetProvider>(context, listen: false);
+    final notificationProvider =
+        Provider.of<NotificationProvider>(context, listen: false);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final theme = Theme.of(context);
+    final navigator = Navigator.of(context);
+
+    final amount = double.parse(_amountController.text);
+
+    if (_transactionType == TransactionType.expense && !_isEditing) {
+      final budget = budgetProvider.categoryBudgets[_selectedCategory] ?? 0.0;
+      final spent = budgetProvider.allTransactions
+          .where((t) =>
+              t.category == _selectedCategory &&
+              t.type == TransactionType.expense &&
+              t.date.month == _selectedDate.month &&
+              t.date.year == _selectedDate.year)
+          .fold(0.0, (sum, item) => sum + item.amount);
+      final remainingBudget = budget - spent;
+
+      if (amount > remainingBudget) {
+        final shortfall = amount - remainingBudget;
+        final transferDetails = await _showTransferDialog(context, shortfall,
+            budgetProvider.savingsByCategory, _selectedCategory!);
+
+        if (transferDetails != null) {
+          final transferAmount = transferDetails['amount']!;
+          final fromSavingsCategory = transferDetails['category'] as String;
+
+          await budgetProvider.transferFromSavingsToBudget(
+              transferAmount, fromSavingsCategory, _selectedCategory!);
+
+          scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Transferred \$${transferAmount.toStringAsFixed(2)} from $fromSavingsCategory. Transaction added.'),
+              backgroundColor: theme.colorScheme.primary,
+            ),
+          );
+        } else {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: const Text('Transaction cancelled due to insufficient budget.'),
+              backgroundColor: theme.colorScheme.error,
+            ),
+          );
+          return; // Abort transaction
+        }
       }
+    }
 
-      final newTransaction = Transaction(
-        category: _selectedCategory!,
-        amount: amount,
-        date: _selectedDate,
-        type: _transactionType,
+    if (_transactionType == TransactionType.savings &&
+        !_isEditing &&
+        amount > budgetProvider.totalBalance) {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(
+              'Savings cannot exceed available balance of \$${budgetProvider.totalBalance.toStringAsFixed(2)}'),
+          backgroundColor: theme.colorScheme.error,
+        ),
       );
+      return;
+    }
+
+    final newTransaction = Transaction(
+      id: _isEditing ? widget.transaction!.id : null,
+      category: _selectedCategory!,
+      amount: amount,
+      date: _selectedDate,
+      type: _transactionType,
+    );
+
+    if (_isEditing) {
+      await budgetProvider.updateTransaction(newTransaction);
+      if (mounted) {
+        navigator.pop(); // Go back after editing
+      }
+    } else {
       await budgetProvider.addTransaction(newTransaction);
-
-      final notificationProvider = Provider.of<NotificationProvider>(context, listen: false);
       final typeString = newTransaction.type.toString().split('.').last;
-      final capitalizedType =
-          typeString[0].toUpperCase() + typeString.substring(1);
-
+      final capitalizedType = typeString[0].toUpperCase() + typeString.substring(1);
       final transactionNotification = AppNotification(
         id: DateTime.now().millisecondsSinceEpoch,
         title: 'Transaction Added',
@@ -98,23 +173,131 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
         transactionNotification.body,
         'item x',
       );
+    }
+    if (!mounted) return;
 
-      _amountController.clear();
+    scaffoldMessenger.showSnackBar(
+      SnackBar(
+        content: Text('Transaction ${_isEditing ? 'updated' : 'added'} successfully!'),
+        backgroundColor: theme.colorScheme.primary,
+      ),
+    );
+
+    if (!_isEditing) {
       setState(() {
+        _amountController.clear();
         _selectedDate = DateTime.now();
       });
-
-      final mounted = this.mounted;
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Transaction added successfully!'),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-          ),
-        );
-        Navigator.of(context).pop();
-      }
     }
+  }
+
+  Future<Map<String, dynamic>?> _showTransferDialog(
+      BuildContext context,
+      double shortfall,
+      Map<String, double> savingsByCategory,
+      String toCategory) async {
+    final transferAmountController =
+        TextEditingController(text: shortfall.toStringAsFixed(2));
+    String? selectedSavingsCategory;
+    if (savingsByCategory.isNotEmpty) {
+      selectedSavingsCategory = savingsByCategory.keys.first;
+    }
+
+    return showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final selectedBalance =
+                savingsByCategory[selectedSavingsCategory] ?? 0.0;
+
+            String? validateTransferAmount(String text) {
+              if (text.isEmpty) return 'Please enter an amount.';
+              final amount = double.tryParse(text);
+              if (amount == null) return 'Please enter a valid number.';
+              if (amount <= 0) return 'Amount must be positive.';
+              if (amount > selectedBalance) {
+                return 'Exceeds balance of \$${selectedBalance.toStringAsFixed(2)}.';
+              }
+              if (amount < shortfall) {
+                return 'Must cover shortfall of \$${shortfall.toStringAsFixed(2)}.';
+              }
+              return null;
+            }
+
+            return AlertDialog(
+              title: Text('Insufficient Budget for $toCategory'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                      'Your budget is short by \$${shortfall.toStringAsFixed(2)}.'),
+                  const SizedBox(height: 16),
+                  if (savingsByCategory.isNotEmpty) ...[
+                    DropdownButtonFormField<String>(
+                      initialValue: selectedSavingsCategory,
+                      items: savingsByCategory.entries.map((entry) {
+                        return DropdownMenuItem<String>(
+                          value: entry.key,
+                          child: Text(
+                              '${entry.key}: \$${entry.value.toStringAsFixed(2)}'),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedSavingsCategory = newValue;
+                        });
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Transfer From',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: transferAmountController,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      decoration: InputDecoration(
+                        labelText: 'Amount to Transfer',
+                        prefixText: '\$',
+                        errorText: validateTransferAmount(
+                            transferAmountController.text),
+                      ),
+                      onChanged: (value) => setState(() {}),
+                    ),
+                  ] else
+                    const Text('You have no savings to transfer from.'),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () => Navigator.of(ctx).pop(null),
+                ),
+                if (savingsByCategory.isNotEmpty)
+                  ElevatedButton(
+                    child: const Text('Transfer'),
+                    onPressed: () {
+                      final validationError = validateTransferAmount(
+                          transferAmountController.text);
+                      if (validationError == null) {
+                        final amount =
+                            double.parse(transferAmountController.text);
+                        Navigator.of(ctx).pop({
+                          'category': selectedSavingsCategory,
+                          'amount': amount,
+                        });
+                      }
+                    },
+                  ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -139,15 +322,64 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text('Add ${_transactionType.toString().split('.').last}'),
+            title: Text(_isEditing
+                ? 'Edit Transaction'
+                : 'Add ${_transactionType.toString().split('.').last}', style: const TextStyle(color: Colors.white)),
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                gradient: primaryGradient,
+              ),
+            ),
             elevation: 0,
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth > 600) {
+                return _buildWideLayout(budgetProvider, categories);
+              } else {
+                return _buildNarrowLayout(budgetProvider, categories);
+              }
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildNarrowLayout(BudgetProvider budgetProvider, List<String> categories) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24.0),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildCategoryDropdown(categories),
+            const SizedBox(height: 24),
+            _buildAmountField(),
+            const SizedBox(height: 24),
+            _buildDateField(),
+            const SizedBox(height: 48),
+            _buildSaveButton(),
+            if (_transactionType == TransactionType.savings && !_isEditing)
+              _buildSavingsChart(budgetProvider),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWideLayout(BudgetProvider budgetProvider, List<String> categories) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24.0),
+      child: Form(
+        key: _formKey,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 2,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildCategoryDropdown(categories),
                   const SizedBox(height: 24),
@@ -156,20 +388,25 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                   _buildDateField(),
                   const SizedBox(height: 48),
                   _buildSaveButton(),
-                  if (_transactionType == TransactionType.savings)
-                    _buildSavingsChart(budgetProvider),
                 ],
               ),
             ),
-          ),
-        );
-      },
+            if (_transactionType == TransactionType.savings && !_isEditing)
+              const SizedBox(width: 24),
+            if (_transactionType == TransactionType.savings && !_isEditing)
+              Expanded(
+                flex: 3,
+                child: _buildSavingsChart(budgetProvider),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildCategoryDropdown(List<String> categories) {
     return DropdownButtonFormField<String>(
-      value: _selectedCategory,
+      initialValue: _selectedCategory,
       decoration: const InputDecoration(
         labelText: 'Category',
         border: OutlineInputBorder(),
@@ -228,15 +465,9 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Widget _buildSaveButton() {
-    return ElevatedButton(
+    return GradientButton(
       onPressed: _submitTransaction,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-      child: const Text('Save Transaction'),
+      text: _isEditing ? 'Update Transaction' : 'Save Transaction',
     );
   }
 
@@ -262,7 +493,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
         barRods: [
           BarChartRodData(
             toY: amount,
-            color: secondaryBlue,
+            color: primaryGradientTop,
             width: 22,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(6),

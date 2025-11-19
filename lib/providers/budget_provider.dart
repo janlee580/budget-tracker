@@ -19,6 +19,16 @@ class BudgetProvider with ChangeNotifier {
   double get totalExpensesThisMonth => _totalExpensesThisMonth;
   bool get isLoading => _isLoading;
 
+  Map<String, double> get savingsByCategory {
+    final Map<String, double> savingsMap = {};
+    for (var transaction
+        in _allTransactions.where((t) => t.type == TransactionType.savings)) {
+      savingsMap.update(transaction.category, (value) => value + transaction.amount,
+          ifAbsent: () => transaction.amount);
+    }
+    return savingsMap;
+  }
+
   BudgetProvider() {
     loadData();
   }
@@ -28,7 +38,8 @@ class BudgetProvider with ChangeNotifier {
     notifyListeners();
 
     final dbHelper = DatabaseHelper.instance;
-    _allTransactions = (await dbHelper.getTransactions()).cast<Transaction>().toList();
+    _allTransactions =
+        (await dbHelper.getTransactions()).cast<Transaction>().toList();
     _categoryBudgets = await dbHelper.getCategoryBudgets();
     _totalSavings = await dbHelper.calculateTotalSavings();
 
@@ -47,8 +58,41 @@ class BudgetProvider with ChangeNotifier {
     await loadData();
   }
 
+  Future<void> updateTransaction(Transaction transaction) async {
+    await DatabaseHelper.instance.updateTransaction(transaction);
+    await loadData();
+  }
+
+  Future<void> deleteTransaction(int id) async {
+    await DatabaseHelper.instance.deleteTransaction(id);
+    await loadData();
+  }
+
   Future<void> updateCategoryBudgets(Map<String, double> newBudgets) async {
     await DatabaseHelper.instance.updateCategoryBudgets(newBudgets);
+    await loadData();
+  }
+
+  Future<void> transferFromSavingsToBudget(
+      double amount, String fromSavingsCategory, String toBudgetCategory) async {
+    if (amount <= 0) return;
+
+    // Create a transaction to represent the transfer from savings
+    final transferTransaction = Transaction(
+      category: fromSavingsCategory,
+      amount: -amount, // Negative to reduce the balance of the savings category
+      date: DateTime.now(),
+      type: TransactionType.savings,
+    );
+    await DatabaseHelper.instance.insertTransaction(transferTransaction);
+
+    // Update the budget for the category
+    final newBudgets = Map<String, double>.from(_categoryBudgets);
+    newBudgets.update(toBudgetCategory, (value) => value + amount,
+        ifAbsent: () => amount);
+    await DatabaseHelper.instance.updateCategoryBudgets(newBudgets);
+
+    // Reload all data
     await loadData();
   }
 }

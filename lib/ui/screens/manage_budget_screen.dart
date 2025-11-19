@@ -1,3 +1,4 @@
+import 'package:bt/ui/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:bt/data/models/transaction.dart';
@@ -54,9 +55,7 @@ class ManageBudgetScreen extends StatelessWidget {
             child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
             onPressed: () => Navigator.of(ctx).pop(),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: primaryGreen, foregroundColor: textBlack),
-            child: const Text('Save'),
+          GradientButton(
             onPressed: () {
               if (dialogFormKey.currentState!.validate()) {
                 final category = categoryNameController.text;
@@ -67,6 +66,9 @@ class ManageBudgetScreen extends StatelessWidget {
                 Navigator.of(ctx).pop();
               }
             },
+            text: 'Save',
+            width: 100,
+            height: 40,
           ),
         ],
       ),
@@ -105,7 +107,12 @@ class ManageBudgetScreen extends StatelessWidget {
       builder: (context, budgetProvider, child) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Manage Budgets'),
+            title: const Text('Manage Budgets', style: TextStyle(color: Colors.white)),
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                gradient: primaryGradient,
+              ),
+            ),
           ),
           body: LayoutBuilder(
             builder: (context, constraints) {
@@ -122,7 +129,7 @@ class ManageBudgetScreen extends StatelessWidget {
                         const Text("Category Budgets", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         IconButton(
                           onPressed: () => _addOrUpdateCategoryBudget(context, budgetProvider),
-                          icon: Icon(Icons.add_circle, color: primaryGreen),
+                          icon: const Icon(Icons.add_circle, color: primaryGradientTop, size: 30),
                         ),
                       ],
                     ),
@@ -133,7 +140,7 @@ class ManageBudgetScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 20.0),
                             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                               maxCrossAxisExtent: 400,
-                              childAspectRatio: 1.8,
+                              childAspectRatio: 1.9,
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16,
                             ),
@@ -148,7 +155,10 @@ class ManageBudgetScreen extends StatelessWidget {
                             itemCount: budgets.length,
                             itemBuilder: (context, index) {
                               final entry = budgets[index];
-                              return _buildCategoryBudgetCard(context, budgetProvider, entry.key, entry.value);
+                              return SizedBox(
+                                height: 120,
+                                child: _buildCategoryBudgetCard(context, budgetProvider, entry.key, entry.value),
+                              );
                             },
                           ),
                   ),
@@ -177,7 +187,7 @@ class ManageBudgetScreen extends StatelessWidget {
     Color getProgressColor(double progress) {
       if (progress >= 0.9) return warningRed;
       if (progress >= 0.7) return Colors.orangeAccent;
-      return primaryGreen;
+      return primaryGradientTop;
     }
 
     return Card(
@@ -188,46 +198,54 @@ class ManageBudgetScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(category, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Text('\$${remaining.toStringAsFixed(2)} left',
-                    style: TextStyle(color: remaining < 0 ? warningRed : Colors.grey, fontWeight: FontWeight.w500)),
+                Expanded(
+                  child: Text(category, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text('\$${remaining.toStringAsFixed(2)} left',
+                      style: TextStyle(color: remaining < 0 ? warningRed : Colors.grey, fontWeight: FontWeight.w500)),
+                ),
               ],
             ),
-            const SizedBox(height: 12),
-            TweenAnimationBuilder<double>(
-              tween: Tween<double>(begin: 0, end: progress),
-              duration: const Duration(milliseconds: 750),
-              builder: (context, value, child) {
-                return LinearProgressIndicator(
-                  value: value,
-                  backgroundColor: lightGrey,
-                  valueColor: AlwaysStoppedAnimation<Color>(getProgressColor(value)),
-                  minHeight: 8,
-                  borderRadius: BorderRadius.circular(4),
-                );
-              },
+            const SizedBox(height: 8),
+            Expanded(
+              child: Center(
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0, end: progress),
+                  duration: const Duration(milliseconds: 750),
+                  builder: (context, value, child) {
+                    return LinearProgressIndicator(
+                      value: value,
+                      backgroundColor: lightGrey,
+                      valueColor: AlwaysStoppedAnimation<Color>(getProgressColor(value)),
+                      minHeight: 8,
+                      borderRadius: BorderRadius.circular(4),
+                    );
+                  },
+                ),
+              ),
             ),
             const SizedBox(height: 4),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Spent \$${spent.toStringAsFixed(2)} of \$${budget.toStringAsFixed(2)}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit, size: 20, color: Colors.blueGrey),
-                      onPressed: () => _addOrUpdateCategoryBudget(context, budgetProvider, category),
-                      tooltip: 'Edit Budget',
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete_outline, size: 20, color: warningRed),
-                      onPressed: () => _deleteCategoryBudget(context, budgetProvider, category),
-                      tooltip: 'Delete Budget',
-                    ),
-                  ],
+                Expanded(
+                  child: Text('Spent \$${spent.toStringAsFixed(2)} of \$${budget.toStringAsFixed(2)}', style: const TextStyle(color: Colors.grey, fontSize: 12), overflow: TextOverflow.ellipsis),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.edit, size: 20, color: Colors.blueGrey),
+                  onPressed: () => _addOrUpdateCategoryBudget(context, budgetProvider, category),
+                  tooltip: 'Edit Budget',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+                IconButton(
+                  icon: Icon(Icons.delete_outline, size: 20, color: warningRed),
+                  onPressed: () => _deleteCategoryBudget(context, budgetProvider, category),
+                  tooltip: 'Delete Budget',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
               ],
             )
