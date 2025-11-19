@@ -50,6 +50,47 @@ A comprehensive, user-friendly budget tracking application built with Flutter. I
 5.  Go to the **History** tab to view, edit, or delete any past transaction.
 6.  Explore the **Settings** tab to switch to Dark Mode or reset your data.
 
+### Home Screen
+![HomeScreen.png](assets/images/HomeScreen.png)
+
+### Manage Budget Screen
+![ManageBudgetScreen.png](assets/images/ManageBudgetScreen.png)
+![BudgetUpdateDialog.png](assets/images/BudgetUpdateDialog.png)
+
+### Add Transaction Screen
+![AddTransactionScreen.png](assets/images/AddTransactionDialog.png)
+![AddExpenseScreen.png](assets/images/AddExpenseScreen.png)
+![AddIncomeScreen.png](assets/images/AddIncomeScreen.png)
+![AddSavingsScreen.png](assets/images/AddSavingsScreen.png)
+![SavingsAmountTransferDialog.png](assets/images/SavingsAmountTransferDialog.png)
+
+### Summary Screen
+![SummaryScreen.png](assets/images/SummaryScreen1.png)
+![SummaryScreen2.png](assets/images/SummaryScreen2.png)
+
+### History Screen
+![HistoryScreen.png](assets/images/TransactionHistoryScreen.png)
+![TransactionHistoryScreen1.png](assets/images/TransactionHistoryScreen1.png)
+![TransactionHistoryScreen2.png](assets/images/TransactionHistoryScreen2.png)
+![EditTransactionScreen.png](assets/images/EditTransactionScreen.png)
+![DeleteTransactionDialog.png](assets/images/DeleteTransactionDialog.png)
+
+### Notification Screen
+![NotificationScreen.png](assets/images/NotificationScreen.png)
+
+### Settings Screen
+![SettingsScreen.png](assets/images/SettingsScreen.png)
+
+### DarkMode
+![DarkMode.png](assets/images/DarkMode.png)
+![DarkMode1.png](assets/images/DarkMode1.png)
+![DarkMode2.png](assets/images/DarkMode2.png)
+![DarkMode3.png](assets/images/DarkMode3.png)
+![DarkMode4.png](assets/images/DarkMode4.png)
+![DarkMode5.png](assets/images/DarkMode5.png)
+![DarkMode6.png](assets/images/DarkMode6.png)
+
+
 ## Developer
 
 This application was developed by :
