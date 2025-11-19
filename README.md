@@ -1,6 +1,6 @@
 # Budget Tracker App
 
-A comprehensive, offline-first budget tracking application built with Flutter. It allows users to effortlessly record their daily income, expenses, and savings, manage their transaction history, and gain powerful insights into their financial habits through a clean and intuitive user interface.
+A comprehensive, user-friendly budget tracking application built with Flutter. It allows users to effortlessly record their daily income, expenses, and savings, manage their transaction history, and gain powerful insights into their financial habits through a clean and intuitive user interface.
 
 ## Features
 
@@ -15,8 +15,10 @@ A comprehensive, offline-first budget tracking application built with Flutter. I
     *   **Expense Breakdown:** A pie chart visualizes spending by category.
     *   **Monthly Savings:** A bar chart tracks savings performance over time.
     *   **Spending Trends:** A line chart shows daily spending patterns.
+    *   Details in the bar graph will show the amount spent in savings category by hovering it.
 *   **Intelligent Budget Management:**
     *   When adding an expense that exceeds the monthly budget for a category, the app proactively offers to **transfer the shortfall from a savings category**, preventing the transaction from being blocked.
+    *   Can add, set/edit, or delete budget category
 *   **Monthly Filtering:**
     *   Filter the entire summary dashboard to view data for specific months or an overall summary of all time.
 *   **App Personalization & Data Management:**
@@ -25,6 +27,8 @@ A comprehensive, offline-first budget tracking application built with Flutter. I
 *   **Notifications:**
     *   Receive a notification whenever a new transaction is added.
     *   A dedicated notification center to view and manage past notifications.
+    *   An option to delete a specific notification.
+    *   Can mark a specific notification as read by tapping on it and can mark all as read by tapping check icon.
 *   **Responsive Design:**
     *   The user interface gracefully adapts to both standard phone screens and wider displays like tablets or phones in landscape mode.
 *   **Offline First:**
