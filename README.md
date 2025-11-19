@@ -41,4 +41,7 @@ A comprehensive, offline-first budget tracking application built with Flutter. I
 
 ## Developer
 
-This application was developed by [Janlee Estoy].
+This application was developed by :
+- Janlee Estoy,
+- Alaisa Maquilan,
+- Gabriel Phoenix Serohijos
